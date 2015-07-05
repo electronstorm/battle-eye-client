@@ -7,7 +7,7 @@ npm install battle-eye-client
 ```
 # Example
 ```js
-var BattleEyeClient = require("..")
+var BattleEyeClient = require("battle-eye-client")
 
 var battleEyeClient = new BattleEyeClient("IP", 2320, "Password", function (message) {
   console.log(message)
