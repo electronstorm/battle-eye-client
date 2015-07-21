@@ -9,13 +9,21 @@ npm install battle-eye-client
 ```js
 var BattleEyeClient = require("battle-eye-client")
 
-var battleEyeClient = new BattleEyeClient("IP", 2320, "Password", function (message) {
-  console.log(message)
-})
+var battleEyeClient = new BattleEyeClient("IP", 2320, "Password")
+battleEyeClient.messageHandler =  function (message) {
+  //Process messages
+  console.log(message);
+};
+
+battleEyeClient.timeoutHandler= function() {
+  //Do your cleanup and error handling
+  console.log("Connection timed out.");
+  battleEyeClient = undefined;
+};
 battleEyeClient.connect()
 
 battleEyeClient.sendCommand("players")
-battleEyeClient.sendCommand("say -1 Hello")
+battleEyeClient.sendCommand("say -1 Hello World")
 ```
 
 # Dependencies

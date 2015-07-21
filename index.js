@@ -1,12 +1,13 @@
 var dgram = require('dgram');
 var crc32 = require('buffer-crc32');
 
-function BattleEyeClient (ip, port, password, messageHandler) {
+function BattleEyeClient (ip, port, password) {
   this.socket =  dgram.createSocket( "udp4" )
   this.ip = ip
   this.port = port
   this.password = password
-  this.messageHandler = messageHandler
+  this.messageHandler = undefined
+  this.timeoutHandler = undefined
   this.sequenceNumber = 0
   this.loggedIn = false
   this.lastResponse = 0
@@ -48,7 +49,9 @@ BattleEyeClient.prototype = {
       if(buffer[7] == 0x02) {
         this.parent.acknowledge(buffer[8])
         this.parent.sequenceNumber = buffer[8]
-        this.parent.messageHandler(this.parent.stripHeaderServerMessage(buffer).toString())
+        if(this.parent.messageHandler) {
+          this.parent.messageHandler(this.parent.stripHeaderServerMessage(buffer).toString())
+        }
       }
 
       //Deal with multipacket
@@ -66,14 +69,19 @@ BattleEyeClient.prototype = {
           for (var msg in this.parent.multipacket) {
             total += this.parent.multipacket[msg].toString();
           }
-          this.parent.messageHandler(total)
+          if(this.parent.messageHandler) {
+              this.parent.messageHandler(total)
+          }
+
           this.parent.multipacket = undefined
         }
         return;
       }
       //Deal with command responses
       else if (buffer[7] == 0x01) {
+        if(this.parent.messageHandler) {
           this.parent.messageHandler(this.parent.stripHeaderServerMessage(message).toString())
+        }
       }
     });
     //connect
@@ -90,7 +98,7 @@ BattleEyeClient.prototype = {
         buffer[2 + i] = command.charCodeAt(i)
       }
       var packet = this.buildPacket(buffer)
-      setTimeout(this.timeout, 3000);
+      setTimeout(this.timeout, 3000, this);
       this.send(packet)
   },
   send: function (data) {
@@ -152,10 +160,9 @@ BattleEyeClient.prototype = {
     setTimeout(this.timeout, 3000, this);
     this.send(packet)
   },
-  timeout: function() {
-    if((new Date().getTime() - this.lastCommand >= 2500) && (new Date().getTime() - this.lastResponse) >= 5000) {
-      //console.log("Connection timed out")
-      this.close()
+  timeout: function(client) {
+    if((new Date().getTime() - client.lastCommand >= 3000) && (new Date().getTime() - client.lastResponse) >= 3000) {
+      client.close()
     }
 
   },
@@ -181,10 +188,12 @@ BattleEyeClient.prototype = {
       return buffer
   },
   close: function() {
-    //console.log("Closing connection")
-    clearInterval(this.interval)
-    this.socket.unref()
-    this.socket.close()
+    clearInterval(this.interval);
+    this.socket.unref();
+    this.socket.close();
+    if(this.timeoutHandler) {
+      this.timeoutHandler();
+    }
   }
 }
 
