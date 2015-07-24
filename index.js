@@ -161,7 +161,7 @@ BattleEyeClient.prototype = {
     this.send(packet)
   },
   timeout: function(client) {
-    if((new Date().getTime() - client.lastCommand >= 3000) && (new Date().getTime() - client.lastResponse) >= 3000) {
+    if((new Date().getTime() - client.lastResponse) >= 3000) {
       client.close()
     }
 

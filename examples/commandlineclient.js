@@ -1,6 +1,6 @@
 var BattleEyeClient = require("..")
 
-var battleEyeClient = new BattleEyeClient("IP", 2320, "Password")
+var battleEyeClient = new BattleEyeClient("127.0.0.1", 2320, "Password")
 
 //Show messages
 battleEyeClient.messageHandler =  function (message) {
