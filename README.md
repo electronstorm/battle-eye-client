@@ -1,5 +1,5 @@
 # Description
-A BattleEye Client for node.js. Used for Arma2, DayZ and Arma 3.
+A BattleEye Client for node.js. Used for Arma2 and Arma 3.
 
 # Install
 ```
